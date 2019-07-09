@@ -16,6 +16,6 @@ setup(name='zernike',
     author_email='luke.johnson@nrl.navy.mil',
     url='',
     packages=['zernike'],
-    install_requires=['scipy',],
+    install_requires=['scipy'],
     include_package_data=True,
     zip_safe=False)
