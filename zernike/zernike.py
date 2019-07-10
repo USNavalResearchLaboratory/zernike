@@ -1,5 +1,6 @@
 from scipy.special import factorial
-import scipy
+import scipy as sp
+from scipy import absolute as abs
 #import numpy as np 
 
 def neumann_factor(m):
@@ -8,14 +9,21 @@ def neumann_factor(m):
     else:
         return(1)
 
-'''
+
 def OSAindex(n,m):
+    """
+    Calculates the OSA j-index.
+    
+    :param n: non-negative radial index
+    :param m: azimuthal index 
+    :returns: the j-index
+    """
     j = (n*(n+2)+m)/2
     return(j)
     
 def RadialZernike(rho,n,m,outside=0.0):
-    R = np.zeros_like(rho)
-    m=np.abs(m); #sign of m does not change radial function
+    R = sp.zeros_like(rho)
+    m=abs(m); #sign of m does not change radial function
     if n<m:
         abort();
     if (n-m) % 2 == 0: # is even?
@@ -33,11 +41,11 @@ def RadialZernike(rho,n,m,outside=0.0):
         return(R)
     
 def AngularZernike(phi,m):
-    phase = np.abs(m) * phi;
+    phase = abs(m) * phi;
     if m<0: # negative
-        return(np.sin(phase))
+        return(sp.sin(phase))
     else:   # non-negative
-        return(np.cos(phase))
+        return(sp.cos(phase))
     
 def Zernike(rho,phi,n,m,outside=0):
      return(RadialZernike(rho,n,m,outside=outside)*AngularZernike(phi,m))
@@ -109,7 +117,7 @@ def CalculateZernikeCoefficient(Phase,n,m,debug=False):
     else:
         return(0.0)
 
-    
+'''    
 def ZernikeSpectrum(Phase,nmax=6,Symmetry=None):
     spectrum={}
     spectrum['c']=np.array([])      # coefficient
