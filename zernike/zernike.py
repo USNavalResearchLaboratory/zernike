@@ -1,7 +1,8 @@
-from scipy.special import factorial
+from math import factorial
 import scipy as sp
 from scipy import absolute as abs
-#import numpy as np 
+import matplotlib.pylab as plt
+#from copy import deepcopy
 
 def neumann_factor(m):
     if m==0:
@@ -10,7 +11,7 @@ def neumann_factor(m):
         return(1)
 
 
-def OSAindex(n,m):
+def osa_index(n,m):
     """
     Calculates the OSA j-index.
     
@@ -20,8 +21,23 @@ def OSAindex(n,m):
     """
     j = (n*(n+2)+m)/2
     return(j)
-    
-def RadialZernike(rho,n,m,outside=0.0):
+
+def unitsquare(resolution,coord='xy'):
+    """
+    Create a 2D arrays for x,y coordinates in unit square
+    """    
+    x = sp.linspace(-1,1,resolution)
+    y = sp.linspace(-1,1,resolution)
+    X,Y = sp.meshgrid(x,y)
+    if coord=='xy':
+        return(X,Y)
+    elif coord=='rphi':
+        R = sp.sqrt(X**2+Y**2);
+        PHI = sp.arctan2(Y,X)
+        return(R,PHI)
+
+
+def radial_zernike(rho,n,m,outside=0.0):
     R = sp.zeros_like(rho)
     m=abs(m); #sign of m does not change radial function
     if n<m:
@@ -39,8 +55,8 @@ def RadialZernike(rho,n,m,outside=0.0):
         return(R)
     else:
         return(R)
-    
-def AngularZernike(phi,m):
+
+def angular_zernike(phi,m):
     phase = abs(m) * phi;
     if m<0: # negative
         return(sp.sin(phase))
@@ -50,9 +66,9 @@ def AngularZernike(phi,m):
 def Zernike(rho,phi,n,m,outside=0):
      return(RadialZernike(rho,n,m,outside=outside)*AngularZernike(phi,m))
     
-def CalculateZernikeCoefficient(Phase,n,m,debug=False):
-    
-    Nx, Ny = np.shape(Phase)
+def CalculateZernikeCoefficient(phase,n,m,debug=False):    
+    Phase = phase.copy() 
+    Nx, Ny = sp.shape(Phase)
     if debug: print("Dims of phase: ",Nx,Ny)
     if Nx==Ny:
         Resolution=Nx
@@ -60,21 +76,21 @@ def CalculateZernikeCoefficient(Phase,n,m,debug=False):
         abort()
     if (n-m) % 2 == 0: # is even?
         
-        x = np.linspace(-1,1,Resolution);
-        y = np.linspace(-1,1,Resolution);
+        x = sp.linspace(-1,1,Resolution);
+        y = sp.linspace(-1,1,Resolution);
         dx=x[1]-x[0]; 
         dy=y[1]-y[0];
         if debug: print('dx,dy =',dx,dy)
-        X,Y = np.meshgrid(x,y)
-        R = np.sqrt(X**2+Y**2);
-        phi = np.arctan2(Y,X)
+        X,Y = sp.meshgrid(x,y)
+        R = sp.sqrt(X**2+Y**2);
+        phi = sp.arctan2(Y,X)
         top = 2*n+2
-        bot = neumann_factor(m)*np.pi
+        bot = neumann_factor(m)*sp.pi
         if debug: print('top =',top)
         if debug: print('bot =',bot)
         Phase[R>1] = 0.0
-        if debug: print('max phase =',np.max(Phase))       
-        if debug: print('min phase =',np.min(Phase))  
+        if debug: print('max phase =',sp.max(Phase))       
+        if debug: print('min phase =',sp.min(Phase))  
         if debug:
             import matplotlib.pylab as plt
             plt.figure()
@@ -112,33 +128,33 @@ def CalculateZernikeCoefficient(Phase,n,m,debug=False):
             plt.colorbar()
             plt.title("integrand")
             
-        amn=(top/bot)*np.sum(Phase * Zernike(R,phi,n,m,outside=0)*dx*dy)
+        amn=(top/bot)*sp.sum(Phase * Zernike(R,phi,n,m,outside=0)*dx*dy)
         return(amn)
     else:
         return(0.0)
 
-'''    
+    
 def ZernikeSpectrum(Phase,nmax=6,Symmetry=None):
     spectrum={}
-    spectrum['c']=np.array([])      # coefficient
-    spectrum['j']=np.array([])       # OSA Index
-    spectrum['n']=np.array([])       # Radial Index
-    spectrum['m']=np.array([])       # Angular Index
+    spectrum['c']=sp.array([])      # coefficient
+    spectrum['j']=sp.array([])       # OSA Index
+    spectrum['n']=sp.array([])       # Radial Index
+    spectrum['m']=sp.array([])       # Angular Index
 
     for n in range(nmax+1): # go up to nmax
         for m in range(-n,n+1): #range from -n to n
             if (n-m) % 2 == 0: # is even?
                 #print(OSAindex(n,m),n,m,amn)
-                spectrum['j'] = np.append(spectrum['j'],int(OSAindex(n,m)))
-                spectrum['n'] = np.append(spectrum['n'],int(n))
-                spectrum['m'] = np.append(spectrum['m'],int(m))
+                spectrum['j'] = sp.append(spectrum['j'],int(OSAindex(n,m)))
+                spectrum['n'] = sp.append(spectrum['n'],int(n))
+                spectrum['m'] = sp.append(spectrum['m'],int(m))
                 if Symmetry==None:
-                    spectrum['c'] = np.append(spectrum['c'],CalculateZernikeCoefficient(Phase,n,m))
+                    spectrum['c'] = sp.append(spectrum['c'],CalculateZernikeCoefficient(Phase,n,m))
                 if Symmetry=='Azimuthal':
                     if m==0:
-                        spectrum['c'] = np.append(spectrum['c'],CalculateZernikeCoefficient(Phase,n,m))
+                        spectrum['c'] = sp.append(spectrum['c'],CalculateZernikeCoefficient(Phase,n,m))
                     else:
-                        spectrum['c'] = np.append(spectrum['c'],0.0)
+                        spectrum['c'] = sp.append(spectrum['c'],0.0)
 
                     
 
@@ -146,17 +162,27 @@ def ZernikeSpectrum(Phase,nmax=6,Symmetry=None):
 
     return(spectrum)
 
-def PlotZernikeSpecturm(Spectrum,IncludePiston=False,unit='rad',PlotThreshold=1e-14):
-    import matplotlib.pylab as plt
-    s = Spectrum;
+
+def PlotZernikeSpecturm(Spectrum,IncludePiston=False,unit='rad',PlotThreshold=1e-14,Symmetry=None):
+    show_element = sp.absolute(Spectrum['c']) >= PlotThreshold
+    
+    if Symmetry =='Azimuthal':
+        show_element[Spectrum['m']!=0]=False
+    
     if IncludePiston:
-        i=0;
+        show_element[0]=True
     else:
-        i=1;
-    s['c'][np.abs(s['c'])<=PlotThreshold*np.nanmax(np.abs(s['c']))]=np.nan
+        show_element[0]=False
+
+    if Symmetry=='Azimuthal':
+        j=(Spectrum['n'][show_element]).copy()
+    else:
+        j = (Spectrum['j'][show_element]).copy()
+    c = Spectrum['c'][show_element]
+        
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches(4,3)
-    ax.plot(s['j'][i:],s['c'][i:],'.k')
+    ax.plot(j,c,'.k')
 
     # Move left y-axis and bottim x-axis to centre, passing through (0,0)
     #ax.spines['left'].set_position('center')
@@ -169,18 +195,32 @@ def PlotZernikeSpecturm(Spectrum,IncludePiston=False,unit='rad',PlotThreshold=1e
     # Show ticks in the left and lower axes only
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
-    ax.set_xticks(np.arange(0,len(s['c']),1),minor=True)
+    if IncludePiston:   xticks = sp.arange(0,j[-1],1)
+    else:               xticks = sp.arange(1,j[-1],1)
+    ax.set_xticks(xticks,minor=True)
     
-    plt.ylim(-1.1*np.nanmax(np.abs(s['c'][i:])),1.1*np.nanmax(np.abs(s['c'][i:])))
+    ymax = sp.nanmax(sp.absolute(c))
+    plt.ylim(-1.1*ymax,1.1*ymax)
+    
     if not unit=='':
         ax.set_ylabel('Zernike Coefficient ('+unit+')')
     else:
         ax.set_ylabel('Zernike Coefficient')
-    ax.set_xlabel('j, OSA Index')
+    if Symmetry=='Azimuthal':
+        ax.set_xlabel('$n$, radial index')
+    else:
+        ax.set_xlabel('$j$, OSA Index')
     return(fig,ax)
 
+def reconstruct(s,resolution):
+    phase = sp.zeros((resolution,resolution));
+    R, PHI = unitsquare(resolution,coord='rphi')
+    for j,n,m in zip(s['j'],s['n'],s['m']):
+        phase += s['c'][int(j)]*Zernike(R,PHI,n,m,outside=0)
+    return(phase)
 
 
+'''
 
 def extract_phase(basename,dims=False):
     
@@ -222,11 +262,22 @@ def CalculateFocalLength(basename,wavelength, radius, dims=False,nmax=6):
     focal_length = -k*radius**2/(4*spectrum['c'][4])
     return(focal_length)
 
+'''
+
 def SimpleCalculateFocalLength( spectrum, wavelength=800e-9, radius=1e-3): # units meters
+    '''
+    Calculate focal length assuming spherical phase fronts
+        
+    spectrum 
+    wavelength  units in meters
+    radius      radius of lens in meters
+    '''
     # Assume spherical phase fronts
-    k = 2*np.pi / wavelength;
+    k = 2*sp.pi / wavelength;
     focal_length = -k*radius**2/(4*spectrum['c'][4])
     return(focal_length)
+
+'''
 
 def Astigmatism( spectrum, wavelength=800e-9, radius=1e-3): # units meters
     # Use phase front with defocus and astigmatism, find 
@@ -300,3 +351,8 @@ def clean_files(fnames,tmppath=None):
         os.remove(tmppath+fname)
     os.removedirs(tmppath+'out')
 '''
+
+
+OSAindex=osa_index
+RadialZernike=radial_zernike
+AngularZernike=angular_zernike    
