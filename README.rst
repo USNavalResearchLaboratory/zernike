@@ -50,7 +50,7 @@ conda activate NAME
 jupyter notebook
 ```
 
-then create a jupyter notebook and import using `from zernike import zernike`. 
+then create a jupyter notebook and import using `import zernike`. 
 If editing the package and you need to constantly re-import the package use `importlib` library. 
 Run `from importlib import reload` and then use `reload(zernike)` as needed.  
 
