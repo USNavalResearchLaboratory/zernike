@@ -92,7 +92,6 @@ def CalculateZernikeCoefficient(phase,n,m,debug=False):
         if debug: print('max phase =',sp.max(Phase))       
         if debug: print('min phase =',sp.min(Phase))  
         if debug:
-            import matplotlib.pylab as plt
             plt.figure()
             plt.imshow(Phase,origin='lower')
             plt.colorbar()

@@ -60,6 +60,8 @@ For local testing the package without the need to install/uninstall in `pip` or 
 Then `zernike` will be in the search path.
 It will show up in `pip` as installed.  
 
+The key functions are in the file `zernike/__init__.py`.
+
 For distributing the package, the following tutorial discusses in detail the procedure: https://packaging.python.org/tutorials/packaging-projects/.
 Run `conda install wheel setuptools` if you plan on editing this package. 
 In short, from within the directory where `setup.py` is located, run 

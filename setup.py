@@ -5,7 +5,7 @@ def readme():
         return f.read();
 
 setup(name='zernike',
-    version='0.0.4',
+    version='0.0.5',
     description='Zernike polynomials and decomposition',
     long_description=readme(),
     classifiers=[
@@ -16,6 +16,6 @@ setup(name='zernike',
     author_email='luke.johnson@nrl.navy.mil',
     url='',
     packages=['zernike'],
-    install_requires=['scipy'],
+    install_requires=['scipy','matplotlib','math'],
     include_package_data=True,
     zip_safe=False)
