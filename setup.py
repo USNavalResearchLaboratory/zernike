@@ -5,7 +5,7 @@ def readme():
         return f.read();
 
 setup(name='zernike',
-    version='0.0.5',
+    version='0.1.0',
     description='Zernike polynomials and decomposition',
     long_description=readme(),
     classifiers=[
